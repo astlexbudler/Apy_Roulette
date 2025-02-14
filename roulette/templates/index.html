@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Linear Roulette</title>
+   <meta name="description" content="A simple linear roulette game for fun.">
+   <meta name="author" content="Apy">
+   <link rel="icon" href="/static/icon.png" type="image/x-icon">
+   <style>
+      body {
+         background-color: white;
+         font-family: Arial, sans-serif;
+         margin: 20px;
+      }
+
+      .container {
+         max-width: 800px;
+         margin: auto;
+      }
+
+      h1 {
+         text-align: center;
+      }
+
+      .controls {
+         display: flex;
+         align-items: center;
+         gap: 10px;
+         padding: 10px 0;
+         border-bottom: 1px solid grey;
+      }
+
+      .controls input {
+         padding: 5px;
+      }
+
+      .button-container {
+         margin-top: 10px;
+      }
+
+      .instructions {
+         font-size: 14px;
+         margin-top: 10px;
+      }
+
+      .roulette-container {
+         width: 100%;
+         height: 200px;
+         overflow-x: scroll;
+         white-space: nowrap;
+         margin-top: 20px;
+      }
+
+      .roulette-item {
+         display: inline-block;
+         text-align: center;
+         vertical-align: middle;
+         height: 180px;
+         line-height: 180px;
+         font-size: 20px;
+         font-weight: bold;
+         color: white;
+      }
+
+      .memo {
+         font-size: 20px;
+         width: 100%;
+         padding: 10px;
+      }
+   </style>
+</head>
+
+<body>
+   <div class="container">
+      <p style="font-size: 12px; text-align: end;">
+         today visit: {{visit_count}}
+      </p>
+      <h1>Linear Roulette</h1>
+      <div class="controls">
+         <label for="item">Item</label>
+         <input type="text" id="item" placeholder="Enter Item Name">
+         <label for="width">Width</label>
+         <input type="number" id="width" placeholder="Enter Item Width">
+         <label for="color">Color</label>
+         <input type="color" id="color">
+         <button onclick="addItem()">Add</button>
+         <button onclick="makeRoulette()">Mix Items</button>
+         <button onclick="spinRoulette()">Spin!</button>
+      </div>
+      <p class="instructions">
+         1. Add an Item – Enter a name, width (larger = higher chance), and color.<br>
+         2. Mix Items – Shuffle for randomness.<br>
+         3. Spin the Roulette! – See the result.
+      </p>
+      <img src="/static/arw.png" alt="룰렛 화살표" style="transform: rotate(115deg); width: 80px;">
+      <div class="roulette-container" id="roulette"></div>
+      <textarea class="memo" placeholder="memo"></textarea>
+   </div>
+
+   <script>
+      let maxWidth = 100000;
+      let nowWidth = 0;
+      let mixed = false;
+
+      function addItem() {
+         const item = document.getElementById('item').value;
+         const width = parseInt(document.getElementById('width').value, 10);
+         if (width < 50) {
+            alert("Please enter a width greater than 50.");
+            return;
+         }
+         const color = document.getElementById('color').value;
+         const roulette = document.getElementById('roulette');
+
+         if (!item || !width) {
+            alert("Please enter a valid item and width.");
+            return;
+         }
+
+         const newItem = document.createElement('div');
+         newItem.className = 'roulette-item';
+         newItem.style.backgroundColor = color;
+         newItem.style.width = width * 3 + 'px';
+         newItem.innerText = item;
+
+         nowWidth += width * 3;
+         roulette.appendChild(newItem);
+      }
+
+      function makeRoulette() {
+         if (mixed) return;
+         mixed = true;
+         const roulette = document.getElementById('roulette');
+         const items = Array.from(roulette.children);
+         roulette.innerHTML = '';
+
+         while (nowWidth < maxWidth) {
+            const randomItem = items[Math.floor(Math.random() * items.length)].cloneNode(true);
+            roulette.appendChild(randomItem);
+            nowWidth += parseInt(randomItem.style.width);
+         }
+      }
+
+      spinRoulette = () => {
+         // randomWidth is between 0 and 10000
+         var randomWidth = Math.floor(Math.random() * maxWidth);
+         const roulette = document.getElementById('roulette');
+
+         // scrollWidth is the width of the roulette with animaiton
+         const scrollWidth = roulette.scrollWidth;
+         const scrollDiv = document.getElementById('roulette');
+         let scrollPosition = 0;
+         const maxScroll = scrollWidth - scrollDiv.clientWidth;
+
+         function animateScroll() {
+            scrollPosition += 60;
+            scrollDiv.scrollLeft = scrollPosition;
+
+            // stop
+            if (scrollPosition >= randomWidth) {
+               scrollDiv.scrollLeft = randomWidth;
+
+               // alert the item
+               const items = roulette.children;
+               for (let i = 0; i < items.length; i++) {
+                  if (items[i].offsetLeft <= randomWidth + 100 && items[i].offsetLeft + items[i].offsetWidth >= randomWidth + 100) {
+                     alert("🎉 Selected Item is " + items[i].innerText);
+                     break;
+                  }
+               }
+               return;
+            }
+            requestAnimationFrame(animateScroll);
+         }
+         animateScroll();
+      }
+   </script>
+</body>
+
+</html>
